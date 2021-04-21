@@ -10,8 +10,7 @@ AnimatorState:
   m_Name: CardAnimation
   m_Speed: 1
   m_CycleOffset: 0
-  m_Transitions:
-  - {fileID: 175004898274137853}
+  m_Transitions: []
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
@@ -88,9 +87,6 @@ AnimatorStateMachine:
   - serializedVersion: 1
     m_State: {fileID: -8059871345263992626}
     m_Position: {x: 220, y: 200, z: 0}
-  - serializedVersion: 1
-    m_State: {fileID: -4325011915975461572}
-    m_Position: {x: 460, y: 320, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []
