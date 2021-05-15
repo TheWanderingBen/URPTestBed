@@ -89,10 +89,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - Vector1_35da3833edd74da4af6d3cb678f5cc1f: -1
-    - Vector1_3943f892fbcf409d9ab7eb20b64cbcaf: 0.05
-    - Vector1_708ed910c9604003b8838f5ad65b97e2: 20
+    - Vector1_3943f892fbcf409d9ab7eb20b64cbcaf: 0.5
+    - Vector1_708ed910c9604003b8838f5ad65b97e2: 10
     - Vector1_916f6de432134d778cf34301265596c2: 0
-    - Vector1_a96e4dbc4ca04e768455bc9586c6cc0e: 1
+    - Vector1_a96e4dbc4ca04e768455bc9586c6cc0e: 0.5
     - Vector1_f9759425d73e40ca8404dc08895cc679: 0.05
     - _AlphaClip: 0
     - _Blend: 0
@@ -100,6 +100,7 @@ Material:
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _Cull: 2
+    - _CurrentInertia: 0
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
