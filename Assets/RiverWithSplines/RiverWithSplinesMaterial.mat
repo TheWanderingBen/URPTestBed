@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: RiverMaterial
-  m_Shader: {fileID: -6465566751694194690, guid: 6cf807493ecc5434eb073d142bf3ceec, type: 3}
+  m_Name: RiverWithSplinesMaterial
+  m_Shader: {fileID: -6465566751694194690, guid: 395205c08e9ebad4192c634b192ba046, type: 3}
   m_ShaderKeywords: _NORMALMAP
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -84,12 +84,12 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - Vector1_088afa1df24a49d396994194ac8a7785: 0
-    - Vector1_2118a8308e3c4dea9b462d7258bfcc6f: 0.2
-    - Vector1_2cb80b4aa6574b61a7256e543a44cd35: 3
-    - Vector1_5d7d935e24e5457581f04bbafc29c184: 0.17
-    - Vector1_bcedab938c254d59bc0ee819eeb6dfe6: 5
-    - Vector1_d0afeaa334344fb49387da9884ed1adf: 0.627
+    - Vector1_088afa1df24a49d396994194ac8a7785: 0.735
+    - Vector1_2118a8308e3c4dea9b462d7258bfcc6f: 0
+    - Vector1_2cb80b4aa6574b61a7256e543a44cd35: 0
+    - Vector1_5d7d935e24e5457581f04bbafc29c184: 0
+    - Vector1_bcedab938c254d59bc0ee819eeb6dfe6: 0.1
+    - Vector1_d0afeaa334344fb49387da9884ed1adf: 1
     - _AlphaClip: 0
     - _Blend: 0
     - _BumpScale: 1
@@ -117,9 +117,9 @@ Material:
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
-    - Color_a985df075b8d4d1fa6b0c0dc25ddb16b: {r: 0.039215688, g: 0.5764706, b: 0.5882353, a: 1}
+    - Color_a985df075b8d4d1fa6b0c0dc25ddb16b: {r: 0.43854573, g: 0.617009, b: 0.6886792, a: 1}
     - Vector2_4e809df07d5b48b7ac73ac702ef0902a: {r: 0, g: 1, b: 0, a: 0}
-    - Vector2_990d8498f71c4e889239824b9e16d914: {r: 0.2, g: 0.2, b: 0, a: 0}
+    - Vector2_990d8498f71c4e889239824b9e16d914: {r: 0.2, g: 1, b: 0, a: 0}
     - _BaseColor: {r: 0.5803922, g: 0.8235294, b: 0.7411765, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
