@@ -1,0 +1,72 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+struct SourceVertex
+{
+    float3 positionOS;
+    float2 uv;
+};
+
+struct GeneratedVertex
+{
+    float3 positionOS;
+    float3 normalOS;
+    float2 uv;
+};
+
+StructuredBuffer<SourceVertex> _SourceGroundVertices;
+StructuredBuffer<int> _SourceGroundIndices;
+StructuredBuffer<SourceVertex> _SourceGrassBladeVertices;
+StructuredBuffer<int> _SourceGrassBladeIndices;
+RWStructuredBuffer<GeneratedVertex> _GeneratedVertices;
+RWStructuredBuffer<int> _GeneratedIndices;
+int _NumGroundVertices;
+int _NumGrassBladeVertices;
+int _NumGrassBladeIndices;
+float4x4 _Transform;
+
+SourceVertex Transform(SourceVertex inputVertex)
+{
+    SourceVertex outputVertex;
+    outputVertex.positionOS = mul(_Transform, float4(inputVertex.positionOS, 1)).xyz;
+    outputVertex.uv = inputVertex.uv;
+    return outputVertex;
+}
+
+float3 CalculateTriangleNormal(float3 a, float3 b, float3 c)
+{
+    return normalize(cross(b-a, c-a));
+}
+
+GeneratedVertex MakeGeneratedVertex(SourceVertex inputVertex)
+{
+    GeneratedVertex outputVertex;
+    outputVertex.positionOS = inputVertex.positionOS;
+    outputVertex.normalOS = float3(0,1,0);
+    outputVertex.uv = inputVertex.uv;
+    return outputVertex;
+}
+
+[numthreads(128,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= _NumGroundVertices)
+        return;
+    
+    const SourceVertex transformedGroundVertex = Transform(_SourceGroundVertices[id.x]);
+
+    const int grassVertexStart = id.x * _NumGrassBladeVertices;
+    for (int i = 0; i < _NumGrassBladeVertices; ++i)
+    {
+        SourceVertex grassBladeVertex;
+        grassBladeVertex.positionOS = transformedGroundVertex.positionOS + _SourceGrassBladeVertices[i].positionOS;
+        grassBladeVertex.uv = _SourceGrassBladeVertices[i].uv;
+        _GeneratedVertices[grassVertexStart + i] = MakeGeneratedVertex(grassBladeVertex);
+    }
+
+    const int grassIndexStart = id.x * _NumGrassBladeIndices;
+    for (int i = 0; i < _NumGrassBladeIndices; ++i)
+    {        
+        _GeneratedIndices[grassIndexStart + i] = grassVertexStart + _SourceGrassBladeIndices[i];
+    }
+}
