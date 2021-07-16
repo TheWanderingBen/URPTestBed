@@ -15,5 +15,5 @@ MonoBehaviour:
   computeShader: {fileID: 7200000, guid: 230ca0fa7bcd799489ba8dfb23c7f9ff, type: 3}
   groundMesh: {fileID: -462981019419857548, guid: db7ca92ac402c914880a85f7d527f475, type: 3}
   grassBladeMesh: {fileID: -462981019419857548, guid: b3013f75778016d44a25808e5f03b9f7, type: 3}
-  scale: {x: 1000, y: 1000, z: 1}
+  scale: {x: 500, y: 500, z: 1}
   rotation: {x: -90, y: 0, z: 0}

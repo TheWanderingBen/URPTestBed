@@ -25,12 +25,11 @@ int _NumGrassBladeVertices;
 int _NumGrassBladeIndices;
 float4x4 _Transform;
 
-SourceVertex Transform(SourceVertex inputVertex)
+float3 RandomRotation(float3 inputPosition, int seed)
 {
-    SourceVertex outputVertex;
-    outputVertex.positionOS = mul(_Transform, float4(inputVertex.positionOS, 1)).xyz;
-    outputVertex.uv = inputVertex.uv;
-    return outputVertex;
+    const float randomNumber = frac(sin(dot(float2(seed, seed), float2(12.9898,78.233))) * 43758.5453123) * 3.14159265 * 2.0;
+    const float3x3 randomTransform = { cos(randomNumber), 0, sin(randomNumber), 0, 1, 0, -sin(randomNumber), 0, cos(randomNumber) };
+    return mul(randomTransform, inputPosition);    
 }
 
 float3 CalculateTriangleNormal(float3 a, float3 b, float3 c)
@@ -53,13 +52,12 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     if (id.x >= _NumGroundVertices)
         return;
     
-    const SourceVertex transformedGroundVertex = Transform(_SourceGroundVertices[id.x]);
-
+    const float3 transformedGroundVertexPosition = mul(_Transform, float4(_SourceGroundVertices[id.x].positionOS, 1)).xyz;
     const int grassVertexStart = id.x * _NumGrassBladeVertices;
     for (int i = 0; i < _NumGrassBladeVertices; ++i)
     {
         SourceVertex grassBladeVertex;
-        grassBladeVertex.positionOS = transformedGroundVertex.positionOS + _SourceGrassBladeVertices[i].positionOS;
+        grassBladeVertex.positionOS = transformedGroundVertexPosition + RandomRotation(_SourceGrassBladeVertices[i].positionOS, id.x);
         grassBladeVertex.uv = _SourceGrassBladeVertices[i].uv;
         _GeneratedVertices[grassVertexStart + i] = MakeGeneratedVertex(grassBladeVertex);
     }
