@@ -24,12 +24,24 @@ int _NumGroundVertices;
 int _NumGrassBladeVertices;
 int _NumGrassBladeIndices;
 float4x4 _Transform;
+float2 _MinMaxRandomScale;
 
-float3 RandomRotation(float3 inputPosition, int seed)
+float RandomNumber(float seed)
+{    
+    return frac(sin(dot(float2(seed, seed), float2(12.9898,78.233))) * 43758.5453123);
+}
+
+float3 RandomScale(float3 inputPosition, float randomNumber)
 {
-    const float randomNumber = frac(sin(dot(float2(seed, seed), float2(12.9898,78.233))) * 43758.5453123) * 3.14159265 * 2.0;
-    const float3x3 randomTransform = { cos(randomNumber), 0, sin(randomNumber), 0, 1, 0, -sin(randomNumber), 0, cos(randomNumber) };
-    return mul(randomTransform, inputPosition);    
+    const float remappedRandom = _MinMaxRandomScale.x + randomNumber * (_MinMaxRandomScale.y - _MinMaxRandomScale.x);
+    return inputPosition * remappedRandom;
+}
+
+float3 RandomRotation(float3 inputPosition, float randomNumber)
+{
+    const float randomRotation = randomNumber * 3.14159265 * 2.0;
+    const float3x3 randomRotationMatrix = { cos(randomRotation), 0, sin(randomRotation), 0, 1, 0, -sin(randomRotation), 0, cos(randomRotation) };
+    return mul(randomRotationMatrix, inputPosition);    
 }
 
 float3 CalculateTriangleNormal(float3 a, float3 b, float3 c)
@@ -54,10 +66,11 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     
     const float3 transformedGroundVertexPosition = mul(_Transform, float4(_SourceGroundVertices[id.x].positionOS, 1)).xyz;
     const int grassVertexStart = id.x * _NumGrassBladeVertices;
+    const float randomNumber = RandomNumber(id.x);
     for (int i = 0; i < _NumGrassBladeVertices; ++i)
     {
         SourceVertex grassBladeVertex;
-        grassBladeVertex.positionOS = transformedGroundVertexPosition + RandomRotation(_SourceGrassBladeVertices[i].positionOS, id.x);
+        grassBladeVertex.positionOS = transformedGroundVertexPosition + RandomRotation(RandomScale(_SourceGrassBladeVertices[i].positionOS, randomNumber), randomNumber);
         grassBladeVertex.uv = _SourceGrassBladeVertices[i].uv;
         _GeneratedVertices[grassVertexStart + i] = MakeGeneratedVertex(grassBladeVertex);
     }

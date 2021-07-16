@@ -91,6 +91,7 @@ public static class GrassBuilder
         shader.SetBuffer(idGrassKernel, "_GeneratedVertices", generatedVertexBuffer);
         shader.SetBuffer(idGrassKernel, "_GeneratedIndices", generatedIndexBuffer);
         shader.SetMatrix("_Transform", Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(settings.rotation), settings.scale));
+        shader.SetVector("_MinMaxRandomScale", settings.minMaxScale);
         shader.SetInt("_NumGroundVertices", sourceGroundVertices.Length);
         shader.SetInt("_NumGrassBladeVertices", sourceGrassBladeVertices.Length);
         shader.SetInt("_NumGrassBladeIndices", sourceGrassBladeIndices.Length);

@@ -17,3 +17,4 @@ MonoBehaviour:
   grassBladeMesh: {fileID: -462981019419857548, guid: b3013f75778016d44a25808e5f03b9f7, type: 3}
   scale: {x: 500, y: 500, z: 1}
   rotation: {x: -90, y: 0, z: 0}
+  minMaxScale: {x: 0.8, y: 1.2}
