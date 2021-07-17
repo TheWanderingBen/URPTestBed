@@ -24,6 +24,7 @@ int _NumGrassBladeIndices;
 float2 _MinMaxRandomScale;
 float2 _Extents;
 float _Density;
+float _MaxRandomPositionShift;
 
 float RandomNumber(float seed)
 {    
@@ -63,11 +64,13 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     if (id.x >= _NumBlades)
         return;
 
-    float xCoord = (id.x * _Density) % _Extents.x - _Extents.x / 2.0;
-    float zCoord = floor(id.x * _Density / _Extents.x) * _Density - _Extents.y / 2.0;
-    const float3 groundVertexPosition = float3(xCoord, 0, zCoord);
-    const int grassVertexStart = id.x * _NumGrassBladeVertices;
     const float randomNumber = RandomNumber(id.x);
+    
+    float xCoord = (id.x * _Density) % _Extents.x + _MaxRandomPositionShift * randomNumber - _Extents.x / 2.0;
+    float zCoord = floor(id.x * _Density / _Extents.x) * _Density + _MaxRandomPositionShift * randomNumber - _Extents.y / 2.0;
+    const float3 groundVertexPosition = float3(xCoord, 0, zCoord);
+    
+    const int grassVertexStart = id.x * _NumGrassBladeVertices;
     for (int i = 0; i < _NumGrassBladeVertices; ++i)
     {
         SourceVertex grassBladeVertex;

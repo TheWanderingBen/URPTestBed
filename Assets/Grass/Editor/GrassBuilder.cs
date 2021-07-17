@@ -90,6 +90,7 @@ public static class GrassBuilder
         shader.SetVector("_MinMaxRandomScale", settings.minMaxScale);
         shader.SetVector("_Extents", settings.extents);
         shader.SetFloat("_Density", settings.density);
+        shader.SetFloat("_MaxRandomPositionShift", settings.maxRandomPositionShift);
         shader.SetInt("_NumBlades", numBlades);
         shader.SetInt("_NumGrassBladeVertices", sourceGrassBladeVertices.Length);
         shader.SetInt("_NumGrassBladeIndices", sourceGrassBladeIndices.Length);
