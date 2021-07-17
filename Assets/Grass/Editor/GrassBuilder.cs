@@ -99,7 +99,7 @@ public static class GrassBuilder
         sourceGrassBladeIndexBuffer.SetData(sourceGrassBladeIndices);
         
         shader.GetKernelThreadGroupSizes(idGrassKernel, out uint threadGroupSize, out _, out _);
-        int dispatchSize = Mathf.CeilToInt(numBlades);
+        int dispatchSize = Mathf.CeilToInt((float) numBlades / threadGroupSize);
         shader.Dispatch(idGrassKernel, dispatchSize, 1, 1);
         
         generatedVertexBuffer.GetData(generatedVertices);
