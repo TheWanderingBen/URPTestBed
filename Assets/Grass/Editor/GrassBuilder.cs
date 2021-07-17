@@ -68,41 +68,37 @@ public static class GrassBuilder
 
     public static bool Run(GrassBakeSettings settings, out Mesh generatedMesh)
     {
-        DecomposeMesh(settings.groundMesh, 0, out SourceVertex[] sourceGroundVertices, out int[] sourceGroundIndices);
         DecomposeMesh(settings.grassBladeMesh, 0, out SourceVertex[] sourceGrassBladeVertices, out int[] sourceGrassBladeIndices);
 
-        GeneratedVertex[] generatedVertices = new GeneratedVertex[sourceGroundVertices.Length * sourceGrassBladeVertices.Length];
-        int[] generatedIndices = new int[sourceGroundVertices.Length * sourceGrassBladeIndices.Length];
+        int numBlades = (int)(settings.extents.x * settings.extents.y / (settings.density * settings.density));
         
-        GraphicsBuffer sourceGroundVertexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, sourceGroundVertices.Length, SOURCE_VERTEX_STRIDE);
-        GraphicsBuffer sourceGroundIndexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, sourceGroundIndices.Length, SOURCE_INDEX_STRIDE);
+        GeneratedVertex[] generatedVertices = new GeneratedVertex[numBlades * sourceGrassBladeVertices.Length];
+        int[] generatedIndices = new int[numBlades * sourceGrassBladeIndices.Length];
+        
         GraphicsBuffer sourceGrassBladeVertexBuffer  = new GraphicsBuffer(GraphicsBuffer.Target.Structured, sourceGrassBladeIndices.Length, SOURCE_VERTEX_STRIDE);
-        GraphicsBuffer sourceGrassBladeIndexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, sourceGroundIndices.Length, SOURCE_INDEX_STRIDE);
+        GraphicsBuffer sourceGrassBladeIndexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, sourceGrassBladeIndices.Length, SOURCE_INDEX_STRIDE);
         GraphicsBuffer generatedVertexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, generatedVertices.Length, GENERATED_VERTEX_STRIDE);
         GraphicsBuffer generatedIndexBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, generatedIndices.Length, GENERATED_INDEX_STRIDE);
 
         ComputeShader shader = settings.computeShader;
         int idGrassKernel = shader.FindKernel("CSMain");
         
-        shader.SetBuffer(idGrassKernel, "_SourceGroundVertices", sourceGroundVertexBuffer);
-        shader.SetBuffer(idGrassKernel, "_SourceGroundIndices", sourceGroundIndexBuffer);
         shader.SetBuffer(idGrassKernel, "_SourceGrassBladeVertices", sourceGrassBladeVertexBuffer);
         shader.SetBuffer(idGrassKernel, "_SourceGrassBladeIndices", sourceGrassBladeIndexBuffer);
         shader.SetBuffer(idGrassKernel, "_GeneratedVertices", generatedVertexBuffer);
         shader.SetBuffer(idGrassKernel, "_GeneratedIndices", generatedIndexBuffer);
-        shader.SetMatrix("_Transform", Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(settings.rotation), settings.scale));
         shader.SetVector("_MinMaxRandomScale", settings.minMaxScale);
-        shader.SetInt("_NumGroundVertices", sourceGroundVertices.Length);
+        shader.SetVector("_Extents", settings.extents);
+        shader.SetFloat("_Density", settings.density);
+        shader.SetInt("_NumBlades", numBlades);
         shader.SetInt("_NumGrassBladeVertices", sourceGrassBladeVertices.Length);
         shader.SetInt("_NumGrassBladeIndices", sourceGrassBladeIndices.Length);
         
-        sourceGroundVertexBuffer.SetData(sourceGroundVertices);
-        sourceGroundIndexBuffer.SetData(sourceGroundIndices);
         sourceGrassBladeVertexBuffer.SetData(sourceGrassBladeVertices);
         sourceGrassBladeIndexBuffer.SetData(sourceGrassBladeIndices);
         
         shader.GetKernelThreadGroupSizes(idGrassKernel, out uint threadGroupSize, out _, out _);
-        int dispatchSize = Mathf.CeilToInt((float) sourceGroundVertices.Length / threadGroupSize);
+        int dispatchSize = Mathf.CeilToInt(numBlades);
         shader.Dispatch(idGrassKernel, dispatchSize, 1, 1);
         
         generatedVertexBuffer.GetData(generatedVertices);
@@ -110,8 +106,6 @@ public static class GrassBuilder
 
         generatedMesh = ComposeMesh(generatedVertices, generatedIndices);
         
-        sourceGroundVertexBuffer.Release();
-        sourceGroundIndexBuffer.Release();
         generatedVertexBuffer.Release();
         generatedIndexBuffer.Release();
 

@@ -14,17 +14,16 @@ struct GeneratedVertex
     float2 uv;
 };
 
-StructuredBuffer<SourceVertex> _SourceGroundVertices;
-StructuredBuffer<int> _SourceGroundIndices;
 StructuredBuffer<SourceVertex> _SourceGrassBladeVertices;
 StructuredBuffer<int> _SourceGrassBladeIndices;
 RWStructuredBuffer<GeneratedVertex> _GeneratedVertices;
 RWStructuredBuffer<int> _GeneratedIndices;
-int _NumGroundVertices;
+int _NumBlades;
 int _NumGrassBladeVertices;
 int _NumGrassBladeIndices;
-float4x4 _Transform;
 float2 _MinMaxRandomScale;
+float2 _Extents;
+float _Density;
 
 float RandomNumber(float seed)
 {    
@@ -61,16 +60,18 @@ GeneratedVertex MakeGeneratedVertex(SourceVertex inputVertex)
 [numthreads(128,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    if (id.x >= _NumGroundVertices)
+    if (id.x >= _NumBlades)
         return;
-    
-    const float3 transformedGroundVertexPosition = mul(_Transform, float4(_SourceGroundVertices[id.x].positionOS, 1)).xyz;
+
+    float xCoord = (id.x * _Density) % _Extents.x - _Extents.x / 2.0;
+    float zCoord = floor(id.x * _Density / _Extents.x) * _Density - _Extents.y / 2.0;
+    const float3 groundVertexPosition = float3(xCoord, 0, zCoord);
     const int grassVertexStart = id.x * _NumGrassBladeVertices;
     const float randomNumber = RandomNumber(id.x);
     for (int i = 0; i < _NumGrassBladeVertices; ++i)
     {
         SourceVertex grassBladeVertex;
-        grassBladeVertex.positionOS = transformedGroundVertexPosition + RandomRotation(RandomScale(_SourceGrassBladeVertices[i].positionOS, randomNumber), randomNumber);
+        grassBladeVertex.positionOS = groundVertexPosition + RandomRotation(RandomScale(_SourceGrassBladeVertices[i].positionOS, randomNumber), randomNumber);
         grassBladeVertex.uv = _SourceGrassBladeVertices[i].uv;
         _GeneratedVertices[grassVertexStart + i] = MakeGeneratedVertex(grassBladeVertex);
     }
