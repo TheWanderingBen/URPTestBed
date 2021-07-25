@@ -22,6 +22,7 @@ public static class GrassBuilder
     private const int SOURCE_INDEX_STRIDE = sizeof(int);
     private const int GENERATED_VERTEX_STRIDE = sizeof(float) * (3 + 3 + 2);
     private const int GENERATED_INDEX_STRIDE = sizeof(int);
+    private const int MAX_VERTS_PER_DISPATCH = 65536;
 
     private static void DecomposeMesh(Mesh mesh, int subMeshIndex, out SourceVertex[] vertices, out int[] indices)
     {
@@ -49,6 +50,7 @@ public static class GrassBuilder
     private static Mesh ComposeMesh(GeneratedVertex[] vertices, int[] indices)
     {
         Mesh mesh = new Mesh();
+        mesh.indexFormat = IndexFormat.UInt32;
         Vector3[] meshVertices = new Vector3[vertices.Length];
         Vector3[] meshNormals = new Vector3[vertices.Length];
         Vector2[] meshUVs = new Vector2[vertices.Length];
@@ -62,7 +64,7 @@ public static class GrassBuilder
         mesh.SetNormals(meshNormals);
         mesh.SetUVs(0, meshUVs);
         mesh.SetIndices(indices, MeshTopology.Triangles, 0, true);
-        mesh.Optimize();
+        //mesh.Optimize();
         return mesh;
     }
 
@@ -91,22 +93,37 @@ public static class GrassBuilder
         shader.SetVector("_Extents", settings.extents);
         shader.SetFloat("_Density", settings.density);
         shader.SetFloat("_MaxRandomPositionShift", settings.maxRandomPositionShift);
-        shader.SetInt("_NumBlades", numBlades);
         shader.SetInt("_NumGrassBladeVertices", sourceGrassBladeVertices.Length);
         shader.SetInt("_NumGrassBladeIndices", sourceGrassBladeIndices.Length);
         
         sourceGrassBladeVertexBuffer.SetData(sourceGrassBladeVertices);
         sourceGrassBladeIndexBuffer.SetData(sourceGrassBladeIndices);
-        
-        shader.GetKernelThreadGroupSizes(idGrassKernel, out uint threadGroupSize, out _, out _);
-        int dispatchSize = Mathf.CeilToInt((float) numBlades / threadGroupSize);
-        shader.Dispatch(idGrassKernel, dispatchSize, 1, 1);
-        
-        generatedVertexBuffer.GetData(generatedVertices);
-        generatedIndexBuffer.GetData(generatedIndices);
+
+        int numBladesRemaining = numBlades;
+        for (int i = 0; i <= generatedVertices.Length / MAX_VERTS_PER_DISPATCH; ++i)
+        {
+            int maxBlades = MAX_VERTS_PER_DISPATCH / sourceGrassBladeVertices.Length;
+            int numBladesToCalculate = numBladesRemaining > maxBlades ? maxBlades : numBladesRemaining;
+            if (numBladesRemaining == 0)
+                break;
+            
+            shader.SetInt("_NumBlades", numBladesToCalculate);
+            shader.SetInt("_StartBladeIndex", i * maxBlades);
+            shader.SetInt("_StartVertexIndex", i * Mathf.FloorToInt((float)MAX_VERTS_PER_DISPATCH / sourceGrassBladeVertices.Length) * sourceGrassBladeVertices.Length);
+            shader.GetKernelThreadGroupSizes(idGrassKernel, out uint threadGroupSize, out _, out _);
+            int dispatchSize = Mathf.CeilToInt((float) numBladesToCalculate / threadGroupSize);
+            shader.Dispatch(idGrassKernel, dispatchSize, 1, 1);
+            
+            generatedVertexBuffer.GetData(generatedVertices, i * maxBlades * sourceGrassBladeVertices.Length, 0, numBladesToCalculate * sourceGrassBladeVertices.Length);
+            generatedIndexBuffer.GetData(generatedIndices, i * maxBlades * sourceGrassBladeIndices.Length, 0, numBladesToCalculate * sourceGrassBladeIndices.Length);
+            
+            numBladesRemaining -= numBladesToCalculate;
+        }
 
         generatedMesh = ComposeMesh(generatedVertices, generatedIndices);
         
+        sourceGrassBladeVertexBuffer.Release();
+        sourceGrassBladeIndexBuffer.Release();
         generatedVertexBuffer.Release();
         generatedIndexBuffer.Release();
 
