@@ -10,38 +10,57 @@ public class GrassBakeSettingsInspector : Editor
 
         if (GUILayout.Button("Create"))
         {
-            bool success = GrassBuilder.Run(serializedObject.targetObject as GrassBakeSettings, out Mesh generatedMesh);
+            GrassBakeSettings grassBakeSettings = target as GrassBakeSettings;
+            if (grassBakeSettings == null)
+                return;
 
-            if (success)
-            {
-                SaveMesh(generatedMesh);
-                Debug.Log("Grass created successfully");
-            }
-            else
-            {
-                Debug.LogError("Fail to create grass");
-            }
+            Mesh[] generatedMeshes = GenerateMeshes(grassBakeSettings);
+            GenerateGameObject(generatedMeshes, grassBakeSettings);
         }
     }
 
-    private void SaveMesh(Mesh mesh)
+    private Mesh[] GenerateMeshes(GrassBakeSettings grassBakeSettings)
     {
-        string path = EditorUtility.SaveFilePanel("Save Grass Asset", "Assets/", name, "asset");
-        if (string.IsNullOrEmpty(path))
-            return;
-
-        path = FileUtil.GetProjectRelativePath(path);
-        Mesh oldMesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);
-        if (oldMesh != null)
-        {
-            oldMesh.Clear();
-            EditorUtility.CopySerialized(mesh, oldMesh);
-        }
-        else
-        {
-            AssetDatabase.CreateAsset(mesh, path);
-        }
+        Mesh[] generatedMeshes = new Mesh[grassBakeSettings.lodCount];
         
-        AssetDatabase.SaveAssets();
+        for (int i = 0; i < grassBakeSettings.lodCount; ++i)
+        {
+            bool success = GrassBuilder.Run(grassBakeSettings, i, out generatedMeshes[i]);
+            if (!success)
+            {
+                Debug.LogError("Grass generation failed");
+                break;
+            }
+        }
+
+        return generatedMeshes;
+    }
+
+    private void GenerateGameObject(Mesh[] generatedMeshes, GrassBakeSettings grassBakeSettings)
+    {
+        GameObject parentObject = new GameObject();
+        parentObject.name = grassBakeSettings.objectName;
+        LODGroup lodGroup = parentObject.AddComponent<LODGroup>();
+        LOD[] lods = new LOD[generatedMeshes.Length];
+        
+        for (int i = 0; i < generatedMeshes.Length; ++i)
+        {
+            GameObject generatedGrass = new GameObject();
+            generatedGrass.name = "LOD" + i;
+            
+            MeshFilter meshFilter = generatedGrass.AddComponent<MeshFilter>();
+            meshFilter.sharedMesh = generatedMeshes[i];
+            
+            MeshRenderer meshRenderer = generatedGrass.AddComponent<MeshRenderer>();
+            meshRenderer.sharedMaterial = grassBakeSettings.grassMaterial;
+
+            generatedGrass.transform.parent = parentObject.transform;
+            
+            Renderer[] renderers = new Renderer[1];
+            renderers[0] = meshRenderer;
+            lods[i] = new LOD(1f / (i + 1), renderers);
+        }
+        lodGroup.SetLODs(lods);
+        lodGroup.RecalculateBounds();
     }
 }

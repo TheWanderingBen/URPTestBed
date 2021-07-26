@@ -68,11 +68,12 @@ public static class GrassBuilder
         return mesh;
     }
 
-    public static bool Run(GrassBakeSettings settings, out Mesh generatedMesh)
+    public static bool Run(GrassBakeSettings settings, int lod, out Mesh generatedMesh)
     {
         DecomposeMesh(settings.grassBladeMesh, 0, out SourceVertex[] sourceGrassBladeVertices, out int[] sourceGrassBladeIndices);
 
-        int numBlades = (int)(settings.extents.x * settings.extents.y / (settings.density * settings.density));
+        ++lod;
+        int numBlades = (int)(settings.extents.x * settings.extents.y / (settings.density * settings.density * lod * lod));
         
         GeneratedVertex[] generatedVertices = new GeneratedVertex[numBlades * sourceGrassBladeVertices.Length];
         int[] generatedIndices = new int[numBlades * sourceGrassBladeIndices.Length];
@@ -91,8 +92,8 @@ public static class GrassBuilder
         shader.SetBuffer(idGrassKernel, "_GeneratedIndices", generatedIndexBuffer);
         shader.SetVector("_MinMaxRandomScale", settings.minMaxScale);
         shader.SetVector("_Extents", settings.extents);
-        shader.SetFloat("_Density", settings.density);
-        shader.SetFloat("_MaxRandomPositionShift", settings.maxRandomPositionShift);
+        shader.SetFloat("_Density", settings.density * lod);
+        shader.SetFloat("_MaxRandomPositionShift", settings.maxRandomPositionShift * lod);
         shader.SetInt("_NumGrassBladeVertices", sourceGrassBladeVertices.Length);
         shader.SetInt("_NumGrassBladeIndices", sourceGrassBladeIndices.Length);
         
