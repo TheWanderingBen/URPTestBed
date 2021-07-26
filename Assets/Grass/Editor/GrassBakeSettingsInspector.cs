@@ -13,12 +13,17 @@ public class GrassBakeSettingsInspector : Editor
             GrassBakeSettings grassBakeSettings = target as GrassBakeSettings;
             if (grassBakeSettings == null)
                 return;
+            
+            string path = EditorUtility.SaveFilePanel("Save Grass Asset", "Assets/", name, "prefab");
+            if (string.IsNullOrEmpty(path))
+                return;
 
-            string path = AssetDatabase.GetAssetPath(target);
-            string meshDirectory = GetMeshDirectory(path, grassBakeSettings.objectName + "Meshes");
+            path = FileUtil.GetProjectRelativePath(path);
+            
+            string meshDirectory = GetMeshDirectory(path);
             Mesh[] generatedMeshes = SaveMeshes(grassBakeSettings, meshDirectory);
             
-            GenerateGameObject(generatedMeshes, grassBakeSettings);
+            SavePrefabs(generatedMeshes, grassBakeSettings, path);
         }
     }
 
@@ -44,12 +49,12 @@ public class GrassBakeSettingsInspector : Editor
                 return null;
             }
         }
-        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
 
         return generatedMeshes;
     }
 
-    private void GenerateGameObject(Mesh[] generatedMeshes, GrassBakeSettings grassBakeSettings)
+    private void SavePrefabs(Mesh[] generatedMeshes, GrassBakeSettings grassBakeSettings, string path)
     {
         GameObject parentObject = new GameObject();
         parentObject.name = grassBakeSettings.objectName;
@@ -75,17 +80,29 @@ public class GrassBakeSettingsInspector : Editor
         }
         lodGroup.SetLODs(lods);
         lodGroup.RecalculateBounds();
+        
+        PrefabUtility.SaveAsPrefabAsset(parentObject, path);
+            
+        DestroyImmediate(parentObject);
+        
+        AssetDatabase.SaveAssets();
     }
 
-    private string GetMeshDirectory(string path, string directoryName)
+    private string GetMeshDirectory(string path)
     {
-        string meshDirectory = path.Substring(0, path.LastIndexOf('/') + 1) + directoryName;
-        
-        if(!AssetDatabase.IsValidFolder(meshDirectory))
+        //using AssetDatabase because it's platform agnostic, even though it's a royal pain
+        string meshDirectory = path.Substring(0, path.LastIndexOf('.')) + "Meshes";
+
+        if (AssetDatabase.IsValidFolder(meshDirectory))
         {
-            AssetDatabase.CreateFolder(path.Substring(0, path.LastIndexOf('/')), directoryName);
-            AssetDatabase.Refresh();
+            AssetDatabase.DeleteAsset(meshDirectory);
         }
+        
+        string parentDirectory = path.Substring(0, path.LastIndexOf('/'));
+        string appendToParentDitrctory =
+            path.Substring(path.LastIndexOf('/') + 1, path.LastIndexOf('.')- path.LastIndexOf('/') - 1) + "Meshes";
+        AssetDatabase.CreateFolder(parentDirectory, appendToParentDitrctory);
+        AssetDatabase.Refresh();
 
         return meshDirectory;
     }
