@@ -57,7 +57,6 @@ public class GrassBakeSettingsInspector : Editor
     private void SavePrefabs(Mesh[] generatedMeshes, GrassBakeSettings grassBakeSettings, string path)
     {
         GameObject parentObject = new GameObject();
-        parentObject.name = grassBakeSettings.objectName;
         LODGroup lodGroup = parentObject.AddComponent<LODGroup>();
         LOD[] lods = new LOD[generatedMeshes.Length];
         

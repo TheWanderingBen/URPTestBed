@@ -3,7 +3,6 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "GrassBakeSettings", menuName = "BensCoolScriptableObjects/GrassBakeSettings")]
 public class GrassBakeSettings : ScriptableObject
 {
-    public string objectName;
     public ComputeShader computeShader;
     public Mesh grassBladeMesh;
     public Material grassMaterial;
