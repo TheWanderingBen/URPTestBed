@@ -14,24 +14,37 @@ public class GrassBakeSettingsInspector : Editor
             if (grassBakeSettings == null)
                 return;
 
-            Mesh[] generatedMeshes = GenerateMeshes(grassBakeSettings);
+            string path = AssetDatabase.GetAssetPath(target);
+            string meshDirectory = GetMeshDirectory(path, grassBakeSettings.objectName + "Meshes");
+            Mesh[] generatedMeshes = SaveMeshes(grassBakeSettings, meshDirectory);
+            
             GenerateGameObject(generatedMeshes, grassBakeSettings);
         }
     }
 
-    private Mesh[] GenerateMeshes(GrassBakeSettings grassBakeSettings)
+    private Mesh[] SaveMeshes(GrassBakeSettings grassBakeSettings, string directory)
     {
         Mesh[] generatedMeshes = new Mesh[grassBakeSettings.lodCount];
         
         for (int i = 0; i < grassBakeSettings.lodCount; ++i)
         {
             bool success = GrassBuilder.Run(grassBakeSettings, i, out generatedMeshes[i]);
-            if (!success)
+
+            if (success)
             {
-                Debug.LogError("Grass generation failed");
-                break;
+                string meshPath = directory + "/" +
+                                  directory.Substring(directory.LastIndexOf('/') + 1, directory.Length - directory.LastIndexOf('/') - 1)
+                                  + i + ".asset";
+                
+                AssetDatabase.CreateAsset(generatedMeshes[i], meshPath);
+            }
+            else
+            {
+                Debug.LogError("Fail to create grass");
+                return null;
             }
         }
+        AssetDatabase.SaveAssets();
 
         return generatedMeshes;
     }
@@ -62,5 +75,18 @@ public class GrassBakeSettingsInspector : Editor
         }
         lodGroup.SetLODs(lods);
         lodGroup.RecalculateBounds();
+    }
+
+    private string GetMeshDirectory(string path, string directoryName)
+    {
+        string meshDirectory = path.Substring(0, path.LastIndexOf('/') + 1) + directoryName;
+        
+        if(!AssetDatabase.IsValidFolder(meshDirectory))
+        {
+            AssetDatabase.CreateFolder(path.Substring(0, path.LastIndexOf('/')), directoryName);
+            AssetDatabase.Refresh();
+        }
+
+        return meshDirectory;
     }
 }
