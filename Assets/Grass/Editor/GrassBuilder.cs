@@ -73,7 +73,8 @@ public static class GrassBuilder
         DecomposeMesh(settings.grassBladeMesh, 0, out SourceVertex[] sourceGrassBladeVertices, out int[] sourceGrassBladeIndices);
 
         ++lod;
-        int numBlades = (int)(settings.extents.x * settings.extents.y / (settings.density * settings.density * lod * lod));
+        int numBlades = (int)((settings.extents.x / settings.numTiles.x) * (settings.extents.y / settings.numTiles.y) 
+                              / (settings.density * settings.density * lod * lod));
         
         GeneratedVertex[] generatedVertices = new GeneratedVertex[numBlades * sourceGrassBladeVertices.Length];
         int[] generatedIndices = new int[numBlades * sourceGrassBladeIndices.Length];
@@ -91,7 +92,7 @@ public static class GrassBuilder
         shader.SetBuffer(idGrassKernel, "_GeneratedVertices", generatedVertexBuffer);
         shader.SetBuffer(idGrassKernel, "_GeneratedIndices", generatedIndexBuffer);
         shader.SetVector("_MinMaxRandomScale", settings.minMaxScale);
-        shader.SetVector("_Extents", settings.extents);
+        shader.SetVector("_TileSize", settings.extents / settings.numTiles);
         shader.SetFloat("_Density", settings.density * lod);
         shader.SetFloat("_MaxRandomPositionShift", settings.maxRandomPositionShift * lod);
         shader.SetInt("_NumGrassBladeVertices", sourceGrassBladeVertices.Length);
