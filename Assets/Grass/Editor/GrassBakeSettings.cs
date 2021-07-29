@@ -11,6 +11,7 @@ namespace Grass.Editor
         public float density = 0.1f;
         public float maxRandomPositionShift = 0.05f;
         public Vector2 minMaxScale = new Vector2(0.8f, 1.2f);
+        [Range(0, 1)] public float lodPercent = 1f;
     }
 
     [CreateAssetMenu(fileName = "GrassBakeSettings", menuName = "BensCoolScriptableObjects/GrassBakeSettings")]

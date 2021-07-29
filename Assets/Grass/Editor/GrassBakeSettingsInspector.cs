@@ -97,7 +97,7 @@ namespace Grass.Editor
 
                         Renderer[] renderers = new Renderer[1];
                         renderers[0] = meshRenderer;
-                        lods[i] = new LOD(1f / (i + 1), renderers);
+                        lods[i] = new LOD(grassBakeSettings.grassLODLevelSettings[i].lodPercent, renderers);
                     }
 
                     lodGroup.SetLODs(lods);
