@@ -29,7 +29,7 @@ public class GrassBakeSettingsInspector : Editor
 
     private Mesh[,,] SaveMeshes(GrassBakeSettings grassBakeSettings, string directory)
     {
-        Mesh[,,] generatedMeshes = new Mesh[(int)grassBakeSettings.numTiles.x, (int)grassBakeSettings.numTiles.y, grassBakeSettings.lodCount];
+        Mesh[,,] generatedMeshes = new Mesh[(int)grassBakeSettings.numTiles.x, (int)grassBakeSettings.numTiles.y, grassBakeSettings.grassLODLevelSettings.Length];
 
         for (int x = 0; x < generatedMeshes.GetLength(0); ++x)
         {
@@ -89,7 +89,7 @@ public class GrassBakeSettingsInspector : Editor
                     meshFilter.sharedMesh = generatedMeshes[x, y, i];
 
                     MeshRenderer meshRenderer = generatedGrass.AddComponent<MeshRenderer>();
-                    meshRenderer.sharedMaterial = grassBakeSettings.grassMaterial;
+                    meshRenderer.sharedMaterial = grassBakeSettings.grassLODLevelSettings[i].grassMaterial;
 
                     generatedGrass.transform.parent = tileParentObject.transform;
 

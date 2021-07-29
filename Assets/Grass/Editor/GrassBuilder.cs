@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -70,11 +71,22 @@ public static class GrassBuilder
 
     public static bool Run(GrassBakeSettings settings, int lod, out Mesh generatedMesh)
     {
-        DecomposeMesh(settings.grassBladeMesh, 0, out SourceVertex[] sourceGrassBladeVertices, out int[] sourceGrassBladeIndices);
+        GrassLODLevelSettings currentLOD;
+        try
+        {
+            currentLOD = settings.grassLODLevelSettings[lod];
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            generatedMesh = null;
+            return false;
+        }
+        
+        DecomposeMesh(currentLOD.grassBladeMesh, 0, out SourceVertex[] sourceGrassBladeVertices, out int[] sourceGrassBladeIndices);
 
-        ++lod;
         int numBlades = (int)((settings.extents.x / settings.numTiles.x) * (settings.extents.y / settings.numTiles.y) 
-                              / (settings.density * settings.density * lod * lod));
+                              / (currentLOD.density * currentLOD.density));
         
         GeneratedVertex[] generatedVertices = new GeneratedVertex[numBlades * sourceGrassBladeVertices.Length];
         int[] generatedIndices = new int[numBlades * sourceGrassBladeIndices.Length];
@@ -91,10 +103,10 @@ public static class GrassBuilder
         shader.SetBuffer(idGrassKernel, "_SourceGrassBladeIndices", sourceGrassBladeIndexBuffer);
         shader.SetBuffer(idGrassKernel, "_GeneratedVertices", generatedVertexBuffer);
         shader.SetBuffer(idGrassKernel, "_GeneratedIndices", generatedIndexBuffer);
-        shader.SetVector("_MinMaxRandomScale", settings.minMaxScale);
+        shader.SetVector("_MinMaxRandomScale", currentLOD.minMaxScale);
         shader.SetVector("_TileSize", settings.extents / settings.numTiles);
-        shader.SetFloat("_Density", settings.density * lod);
-        shader.SetFloat("_MaxRandomPositionShift", settings.maxRandomPositionShift * lod);
+        shader.SetFloat("_Density", currentLOD.density);
+        shader.SetFloat("_MaxRandomPositionShift", currentLOD.maxRandomPositionShift);
         shader.SetInt("_NumGrassBladeVertices", sourceGrassBladeVertices.Length);
         shader.SetInt("_NumGrassBladeIndices", sourceGrassBladeIndices.Length);
         
