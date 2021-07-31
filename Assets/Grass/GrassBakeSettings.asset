@@ -16,15 +16,21 @@ MonoBehaviour:
   extents: {x: 500, y: 500}
   numTiles: {x: 10, y: 10}
   grassLODLevelSettings:
-  - grassBladeMesh: {fileID: -462981019419857548, guid: b3013f75778016d44a25808e5f03b9f7, type: 3}
+  - grassBladeMesh: {fileID: -462981019419857548, guid: ef5e3b2bbc72be94abe2b6db53ed9193, type: 3}
     grassMaterial: {fileID: 2100000, guid: a7c1dec6f6c362e4ea9c262ffda15dc0, type: 2}
     density: 0.25
-    maxRandomPositionShift: 0.125
+    maxRandomPositionShift: 0.25
+    minMaxScale: {x: 0.8, y: 1.2}
+    lodPercent: 0.5
+  - grassBladeMesh: {fileID: -462981019419857548, guid: d9c6760e561021b4b83a2318e1b06ba9, type: 3}
+    grassMaterial: {fileID: 2100000, guid: a7c1dec6f6c362e4ea9c262ffda15dc0, type: 2}
+    density: 0.25
+    maxRandomPositionShift: 0.25
     minMaxScale: {x: 0.8, y: 1.2}
     lodPercent: 0.25
   - grassBladeMesh: {fileID: -462981019419857548, guid: b3013f75778016d44a25808e5f03b9f7, type: 3}
     grassMaterial: {fileID: 2100000, guid: a7c1dec6f6c362e4ea9c262ffda15dc0, type: 2}
     density: 0.5
-    maxRandomPositionShift: 0.25
+    maxRandomPositionShift: 0.5
     minMaxScale: {x: 0.8, y: 1.2}
     lodPercent: 0
